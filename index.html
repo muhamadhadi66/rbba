@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rumah Bermain dan Belajar Al Fatih</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #FF6B6B;
+    --secondary: #FFD93D;
+    --accent: #6BCB77;
+    --blue: #4D96FF;
+    --purple: #C77DFF;
+    --orange: #FF9A3C;
+    --bg: #FFF9F0;
+    --white: #ffffff;
+    --dark: #2D2D2D;
+    --text: #444444;
+    --radius: 20px;
+    --shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+  .topbar { background: var(--primary); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+  .topbar span { margin: 0 12px; }
+
+  header { background: white; box-shadow: 0 2px 20px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 999; }
+  .header-inner { max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 42px; height: 42px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .logo span { color: var(--blue); }
+
+  nav { display: flex; align-items: center; gap: 2px; }
+  .nav-item { position: relative; padding: 8px 12px; font-weight: 700; font-size: 13px; color: var(--dark); cursor: pointer; border-radius: 12px; transition: all 0.2s; white-space: nowrap; }
+  .nav-item:hover { background: var(--bg); color: var(--primary); }
+  .nav-item.has-dropdown:after { content: " ▾"; font-size: 11px; opacity: 0.6; }
+  .dropdown { display: none; position: absolute; top: 100%; left: 0; background: white; border-radius: var(--radius); box-shadow: var(--shadow); min-width: 180px; padding: 10px; z-index: 100; }
+  .nav-item:hover .dropdown { display: block; }
+  .dropdown a { display: block; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--text); text-decoration: none; border-radius: 10px; transition: all 0.2s; }
+  .dropdown a:hover { background: var(--bg); color: var(--primary); }
+
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .btn-login { background: none; border: 2px solid var(--primary); color: var(--primary); padding: 8px 18px; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .btn-login:hover { background: var(--primary); color: white; }
+  .btn-register { background: var(--primary); border: 2px solid var(--primary); color: white; padding: 8px 18px; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .btn-register:hover { background: #e05555; border-color: #e05555; transform: scale(1.03); }
+
+  .user-badge { display: none; align-items: center; gap: 10px; }
+  .user-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; cursor: pointer; }
+  .avatar-guru { background: var(--blue); }
+  .avatar-ortu { background: var(--accent); }
+  .avatar-murid { background: var(--purple); }
+  .user-name-badge { font-weight: 800; font-size: 13px; color: var(--dark); }
+  .user-role-tag { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 50px; color: white; display: inline-block; }
+  .role-guru { background: var(--blue); }
+  .role-ortu { background: var(--accent); }
+  .role-murid { background: var(--purple); }
+  .btn-logout { background: none; border: none; color: #aaa; font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all 0.2s; }
+  .btn-logout:hover { color: var(--primary); background: #fff0f0; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: white; border-radius: 28px; padding: 40px; width: 460px; max-width: 95vw; max-height: 90vh; overflow-y: auto; position: relative; animation: modalIn 0.3s ease; }
+  @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-close { position: absolute; top: 18px; right: 20px; background: #f5f5f5; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: #ffecec; color: var(--primary); }
+  .modal-title { font-family: 'Fredoka One', cursive; font-size: 28px; color: var(--dark); margin-bottom: 6px; }
+  .modal-subtitle { font-size: 14px; color: #888; font-weight: 600; margin-bottom: 28px; }
+
+  .role-tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+  .role-tab { padding: 10px; border: 2px solid #eee; border-radius: 14px; text-align: center; cursor: pointer; transition: all 0.2s; font-weight: 800; font-size: 13px; color: #aaa; }
+  .role-tab.active-guru { border-color: var(--blue); color: var(--blue); background: #e8f2ff; }
+  .role-tab.active-ortu { border-color: var(--accent); color: var(--accent); background: #edf9f0; }
+  .role-tab.active-murid { border-color: var(--purple); color: var(--purple); background: #f5eaff; }
+  .role-tab-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: 800; font-size: 13px; color: var(--dark); margin-bottom: 6px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 12px 16px; border: 2px solid #eee; border-radius: 14px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 600; outline: none;
+    transition: border-color 0.2s; color: var(--dark);
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+  .btn-submit { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 14px; font-family: 'Fredoka One', cursive; font-size: 18px; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+  .btn-submit:hover { background: #e05555; transform: scale(1.02); }
+  .modal-switch { text-align: center; margin-top: 18px; font-size: 13px; color: #888; font-weight: 600; }
+  .modal-switch a { color: var(--primary); font-weight: 800; cursor: pointer; text-decoration: none; }
+  .form-error { color: var(--primary); font-size: 12px; font-weight: 700; margin-top: 4px; display: none; }
+
+  .dashboard-panel { display: none; max-width: 1200px; margin: 28px auto; padding: 0 24px; }
+  .dashboard-panel.active { display: block; }
+  .dashboard-header { background: white; border-radius: 24px; padding: 32px; display: flex; align-items: center; gap: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+  .dash-avatar { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; }
+  .dash-info h2 { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--dark); }
+  .dash-info p { font-size: 14px; color: #888; font-weight: 600; margin-top: 4px; }
+  .dash-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .dash-card { background: white; border-radius: 20px; padding: 24px 20px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 2px solid transparent; }
+  .dash-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: var(--primary); }
+  .dash-card-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+  .dash-card-label { font-family: 'Fredoka One', cursive; font-size: 16px; color: var(--dark); }
+  .dash-card-desc { font-size: 12px; color: #aaa; font-weight: 600; margin-top: 4px; }
+
+  .content-panel { display: none; max-width: 1200px; margin: 0 auto 40px; padding: 0 24px; }
+  .content-panel.active { display: block; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .panel-title { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+  .panel-title::before { content: ''; display: block; width: 6px; height: 28px; background: var(--primary); border-radius: 4px; }
+  .btn-back { background: var(--bg); border: none; padding: 10px 20px; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s; color: var(--dark); }
+  .btn-back:hover { background: #ffe0e0; color: var(--primary); }
+
+  .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .data-table th { background: var(--primary); color: white; padding: 14px 18px; text-align: left; font-family: 'Fredoka One', cursive; font-size: 15px; }
+  .data-table td { padding: 12px 18px; border-bottom: 1px solid #f5f5f5; font-size: 14px; font-weight: 600; color: var(--dark); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #fff9f0; }
+
+  .badge-hadir { background: #e8f9ee; color: #2d8a4e; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: 800; }
+  .badge-alfa { background: #ffeaea; color: var(--primary); }
+  .badge-izin { background: #fff8e1; color: #b98900; }
+  .badge-sakit { background: #e8f0ff; color: var(--blue); }
+
+  .nilai-badge { font-size: 20px; font-weight: 800; }
+  .nilai-a { color: #2d8a4e; }
+  .nilai-b { color: var(--blue); }
+
+  .info-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .info-card { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .info-card-icon { font-size: 36px; margin-bottom: 12px; }
+  .info-card-value { font-family: 'Fredoka One', cursive; font-size: 32px; color: var(--primary); }
+  .info-card-label { font-size: 13px; color: #888; font-weight: 700; }
+
+  .raport-box { background: white; border-radius: 24px; padding: 40px; box-shadow: var(--shadow); max-width: 700px; }
+  .raport-header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 24px; margin-bottom: 24px; }
+  .raport-school { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--primary); }
+  .raport-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-top: 6px; }
+  .raport-student { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .raport-field label { font-size: 12px; font-weight: 800; color: #aaa; }
+  .raport-field p { font-size: 14px; font-weight: 700; color: var(--dark); }
+
+  .pengumuman-list { display: flex; flex-direction: column; gap: 16px; }
+  .pengumuman-card { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-left: 5px solid var(--primary); }
+  .pengumuman-card.penting { border-left-color: var(--primary); }
+  .pengumuman-card.info { border-left-color: var(--blue); }
+  .pengumuman-card.acara { border-left-color: var(--accent); }
+  .pengumuman-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 50px; color: white; margin-bottom: 10px; }
+  .badge-penting { background: var(--primary); }
+  .badge-info { background: var(--blue); }
+  .badge-acara { background: var(--accent); }
+  .pengumuman-title { font-family: 'Fredoka One', cursive; font-size: 18px; color: var(--dark); margin-bottom: 8px; }
+  .pengumuman-body { font-size: 14px; color: #666; line-height: 1.6; }
+  .pengumuman-date { font-size: 12px; color: #aaa; font-weight: 700; margin-top: 10px; }
+
+  .elearn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .elearn-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); transition: all 0.3s; cursor: pointer; }
+  .elearn-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
+  .elearn-thumb { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+  .elearn-body { padding: 20px; }
+  .elearn-mapel { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 50px; color: white; display: inline-block; margin-bottom: 10px; }
+  .mapel-mtk { background: var(--blue); }
+  .mapel-bindo { background: var(--accent); }
+  .mapel-ipa { background: var(--orange); }
+  .mapel-agama { background: var(--purple); }
+  .mapel-ips { background: var(--primary); }
+  .elearn-title { font-family: 'Fredoka One', cursive; font-size: 18px; color: var(--dark); margin-bottom: 6px; }
+  .elearn-desc { font-size: 13px; color: #888; line-height: 1.5; }
+  .elearn-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f5f5f5; }
+  .elearn-guru { font-size: 12px; font-weight: 700; color: #aaa; }
+  .btn-buka { background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .btn-buka:hover { background: #e05555; }
+
+  .guru-form { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .guru-form h3 { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--dark); margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .btn-simpan { background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 50px; font-family: 'Fredoka One', cursive; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .btn-simpan:hover { background: #5ab866; transform: scale(1.03); }
+  .btn-tambah { background: var(--blue); color: white; border: none; padding: 12px 28px; border-radius: 50px; font-family: 'Fredoka One', cursive; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .btn-tambah:hover { background: #3a7de0; }
+  .btn-excel { background: #25a36f; margin-left: 10px; }
+  .btn-excel:hover { background: #1e8a5c; }
+
+  .main-site { display: block; }
+  .slider-section { max-width: 1200px; margin: 28px auto 0; padding: 0 24px; }
+  .slider-wrapper { position: relative; border-radius: 28px; overflow: hidden; height: 360px; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; padding: 48px 60px; opacity: 0; transition: opacity 0.7s ease; pointer-events: none; }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  .slide-1 { background: linear-gradient(135deg, #FF6B6B 0%, #FF9A3C 100%); }
+  .slide-2 { background: linear-gradient(135deg, #4D96FF 0%, #C77DFF 100%); }
+  .slide-3 { background: linear-gradient(135deg, #6BCB77 0%, #FFD93D 100%); }
+  .slide-content { flex: 1; color: white; z-index: 2; }
+  .slide-tag { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 50px; padding: 4px 14px; font-size: 12px; font-weight: 800; margin-bottom: 16px; }
+  .slide h2 { font-family: 'Fredoka One', cursive; font-size: 38px; margin-bottom: 14px; text-shadow: 2px 4px 12px rgba(0,0,0,0.15); }
+  .slide p { font-size: 15px; font-weight: 600; opacity: 0.9; margin-bottom: 24px; }
+  .btn-slide { display: inline-block; background: white; color: var(--primary); font-family: 'Fredoka One', cursive; font-size: 15px; padding: 12px 28px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s; cursor: pointer; border: none; }
+  .slide-emoji { font-size: 110px; line-height: 1; animation: floatEmoji 3s ease-in-out infinite; }
+  @keyframes floatEmoji { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-18px) rotate(5deg); } }
+  .slider-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
+  .dot.active { background: white; transform: scale(1.3); }
+  .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.3); border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(4px); }
+  .slider-btn.prev { left: 16px; }
+  .slider-btn.next { right: 16px; }
+
+  .kelas-section, .reward-section, .lokasi-section, .profil-section { max-width: 1200px; margin: 48px auto; padding: 0 24px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .section-title { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+  .section-title::before { content: ''; display: block; width: 6px; height: 28px; background: var(--primary); border-radius: 4px; }
+  .kelas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .kelas-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
+  .kelas-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); }
+  .kelas-header { background: linear-gradient(135deg, var(--primary), var(--orange)); padding: 28px 24px; color: white; text-align: center; }
+  .kelas-emoji { font-size: 48px; display: block; margin-bottom: 12px; }
+  .kelas-title { font-family: 'Fredoka One', cursive; font-size: 22px; }
+  .kelas-body { padding: 24px; }
+  .kelas-price { font-family: 'Fredoka One', cursive; font-size: 24px; color: var(--primary); }
+  .btn-daftar { display: block; text-align: center; background: var(--primary); color: white; padding: 13px; border-radius: 14px; font-family: 'Fredoka One', cursive; font-size: 17px; margin-top: 18px; cursor: pointer; border: none; width: 100%; }
+
+  .reward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .reward-card { background: white; border-radius: 20px; padding: 28px 24px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .lokasi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .map-wrapper { border-radius: 24px; overflow: hidden; height: 320px; }
+  .kontak-card { background: white; border-radius: 24px; padding: 32px; box-shadow: var(--shadow); }
+  .btn-wa { display: block; background: #25D366; color: white; text-align: center; padding: 14px; border-radius: 14px; font-family: 'Fredoka One', cursive; font-size: 16px; text-decoration: none; margin-top: 24px; }
+
+  .tentang-card { background: linear-gradient(135deg, #fff9f0 0%, #fff0f0 100%); border-radius: 28px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 40px; }
+  .visimisi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  footer { background: var(--dark); color: white; padding: 48px 24px 0; margin-top: 20px; }
+  .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
+  .footer-bottom { max-width: 1200px; margin: 0 auto; padding: 20px 0; display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.4); }
+
+  .floating-shapes { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+  .shape { position: absolute; border-radius: 50%; opacity: 0.04; }
+  .shape-1 { width: 400px; height: 400px; background: var(--primary); top: 10%; left: -100px; animation: drift 20s ease-in-out infinite; }
+  @keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-40px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.95); } }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 14px 28px; border-radius: 50px; font-weight: 800; font-size: 14px; z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; box-shadow: var(--shadow); }
+  .toast.show { opacity: 1; }
+  .toast.success { background: var(--accent); }
+  .toast.error { background: var(--primary); }
+
+  .btn-icon { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 12px; margin: 0 2px; }
+  .btn-edit { color: var(--blue); }
+  .btn-delete { color: var(--primary); }
+  .btn-edit:hover, .btn-delete:hover { background: #f0f0f0; }
+
+  @media (max-width: 900px) { .kelas-grid, .reward-grid, .visimisi-grid { grid-template-columns: 1fr; } .lokasi-grid { grid-template-columns: 1fr; } nav { display: none; } .form-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="floating-shapes"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalLogin">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalLogin')">✕</button>
+    <div class="modal-title">🔐 Masuk</div>
+    <div class="modal-subtitle">Pilih peran Anda untuk masuk ke portal Al Fatih</div>
+    <div class="role-tabs">
+      <div class="role-tab" id="login-tab-guru" onclick="selectRole('login','guru')"><span class="role-tab-icon">👨‍🏫</span>Guru</div>
+      <div class="role-tab" id="login-tab-ortu" onclick="selectRole('login','ortu')"><span class="role-tab-icon">👨‍👩‍👧</span>Orang Tua</div>
+      <div class="role-tab" id="login-tab-murid" onclick="selectRole('login','murid')"><span class="role-tab-icon">👦</span>Murid</div>
+    </div>
+    <div class="form-group"><label>Email / Username</label><input type="text" id="login-email" placeholder="Masukkan email atau username"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="Masukkan password"><div class="form-error" id="login-error">Email/password salah atau akun tidak ditemukan.</div></div>
+    <button class="btn-submit" onclick="doLogin()">🚀 Masuk Sekarang</button>
+    <div class="modal-switch">Belum punya akun? <a onclick="switchModal('modalLogin','modalRegister')">Daftar di sini</a></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalRegister">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalRegister')">✕</button>
+    <div class="modal-title">✨ Buat Akun</div>
+    <div class="modal-subtitle">Daftarkan diri Anda di portal Al Fatih</div>
+    <div class="role-tabs">
+      <div class="role-tab" id="reg-tab-guru" onclick="selectRole('reg','guru')"><span class="role-tab-icon">👨‍🏫</span>Guru</div>
+      <div class="role-tab" id="reg-tab-ortu" onclick="selectRole('reg','ortu')"><span class="role-tab-icon">👨‍👩‍👧</span>Orang Tua</div>
+      <div class="role-tab" id="reg-tab-murid" onclick="selectRole('reg','murid')"><span class="role-tab-icon">👦</span>Murid</div>
+    </div>
+    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="reg-nama" placeholder="Masukkan nama lengkap"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="Masukkan email aktif"></div>
+    <div class="form-group" id="reg-mapel-wrap" style="display:none"><label>Mata Pelajaran</label><select id="reg-mapel"><option>Matematika</option><option>Bahasa Indonesia</option><option>IPA</option></select></div>
+    <div class="form-group" id="reg-anak-wrap" style="display:none"><label>Nama Anak</label><input type="text" id="reg-anak" placeholder="Nama anak yang terdaftar"></div>
+    <div class="form-group" id="reg-kelas-wrap" style="display:none"><label>Kelas</label><select id="reg-kelas"><option>Kelas Bermain</option><option>Kelas Calistung</option><option>Kelas 1 SD</option></select></div>
+    <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Buat password (min. 6 karakter)"></div>
+    <div class="form-group"><label>Konfirmasi Password</label><input type="password" id="reg-pass2" placeholder="Ulangi password"><div class="form-error" id="reg-error"></div></div>
+    <button class="btn-submit" onclick="doRegister()">🎉 Daftar Sekarang</button>
+    <div class="modal-switch">Sudah punya akun? <a onclick="switchModal('modalRegister','modalLogin')">Masuk di sini</a></div>
+  </div>
+</div>
+
+<div class="topbar"><span>🌟 Rumah Bermain & Belajar Al Fatih</span><span>📍 Tambun Utara, Bekasi</span><span>📞 0887-151-8778</span></div>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#" onclick="showMain()"><div class="logo-icon">🌟</div>Al Fatih <span>Portal</span></a>
+    <nav>
+      <div class="nav-item" onclick="showMain()">🏠 Beranda</div>
+      <div class="nav-item has-dropdown">📋 Profil<div class="dropdown"><a href="#profil" onclick="showMain()">🏫 Tentang Kami</a><a href="#profil" onclick="showMain()">🔭 Visi & Misi</a></div></div>
+      <div class="nav-item has-dropdown">🎓 Program<div class="dropdown"><a href="#program-kami" onclick="showMain()">🧸 Kelas Bermain</a><a href="#program-kami" onclick="showMain()">✏️ Kelas Calistung</a><a href="#program-kami" onclick="showMain()">📚 Kelas Mapel SD</a></div></div>
+      <div class="nav-item" id="nav-absensi" style="display:none" onclick="showPanel('panel-absensi')">📅 Absensi</div>
+      <div class="nav-item" id="nav-nilai" style="display:none" onclick="showPanel('panel-nilai')">📊 Nilai</div>
+      <div class="nav-item" id="nav-raport" style="display:none" onclick="showPanel('panel-raport')">📋 Raport</div>
+      <div class="nav-item" onclick="showPanel('panel-pengumuman')">📢 Pengumuman</div>
+      <div class="nav-item" onclick="showPanel('panel-elearning')">💻 E-Learning</div>
+      <div class="nav-item" href="#kontak" onclick="showMain()">📍 Kontak</div>
+    </nav>
+    <div class="header-actions">
+      <div id="auth-buttons"><button class="btn-login" onclick="openModal('modalLogin')">Masuk</button><button class="btn-register" onclick="openModal('modalRegister')">Daftar</button></div>
+      <div class="user-badge" id="user-badge"><div class="user-avatar" id="user-avatar-icon"></div><div><div class="user-name-badge" id="user-name-display"></div><span class="user-role-tag" id="user-role-tag"></span></div><button class="btn-logout" onclick="doLogout()">Keluar</button></div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN WEBSITE -->
+<div class="main-site" id="main-site">
+  <div class="slider-section"><div class="slider-wrapper"><div class="slide slide-1 active"><div class="slide-content"><span class="slide-tag">✨ Selamat Datang</span><h2>Belajar Sambil Bermain dengan Ceria!</h2><p>Tempat belajar menyenangkan untuk anak usia dini hingga SD kelas 3</p><button class="btn-slide" onclick="openModal('modalRegister')">Daftar Sekarang →</button></div><div class="slide-emoji">🌟</div><div class="slider-dots"><div class="dot active" onclick="goSlide(0)"></div><div class="dot" onclick="goSlide(1)"></div><div class="dot" onclick="goSlide(2)"></div></div><button class="slider-btn prev" onclick="changeSlide(-1)">‹</button><button class="slider-btn next" onclick="changeSlide(1)">›</button></div><div class="slide slide-2"><div class="slide-content"><span class="slide-tag">🎓 Program Unggulan</span><h2>Kelas Calistung, Bermain & Mapel SD</h2><p>Metode pembelajaran seru berbasis Kurikulum Merdeka</p><button class="btn-slide" onclick="document.getElementById('program-kami').scrollIntoView()">Lihat Program →</button></div><div class="slide-emoji">📚</div></div><div class="slide slide-3"><div class="slide-content"><span class="slide-tag">💻 Fitur Baru</span><h2>Portal Digital Orang Tua, Guru & Murid</h2><p>Pantau absensi, nilai, raport & e-learning dalam satu portal</p><button class="btn-slide" onclick="openModal('modalRegister')">Buat Akun →</button></div><div class="slide-emoji">🖥️</div></div></div></div>
+  <div class="profil-section" id="profil"><div class="section-header"><div class="section-title">🏫 Tentang Kami</div></div><div class="tentang-card"><div class="tentang-text"><h2>Rumah Bermain & Belajar Al Fatih</h2><p>Al Fatih adalah lembaga pendidikan nonformal yang hadir untuk mendampingi tumbuh kembang anak melalui pendekatan bermain sambil belajar yang menyenangkan dan berkarakter.</p><p>Berlokasi di Tambun Utara, Bekasi, kami menyediakan kelas bermain, calistung, dan pendampingan mata pelajaran SD berbasis Kurikulum Merdeka dengan kelas kecil dan personal (5–6 anak).</p></div><div class="tentang-visual">🏫</div></div><div class="section-header"><div class="section-title">🔭 Visi & Misi</div></div><div class="visimisi-grid"><div class="visimisi-card visi"><div class="visimisi-title">🔭 Visi</div><ul class="visimisi-list"><li>Menjadi lembaga pendidikan nonformal terpercaya yang melahirkan generasi cerdas, berkarakter, dan berakhlak mulia.</li></ul></div><div class="visimisi-card misi"><div class="visimisi-title">🚀 Misi</div><ul class="visimisi-list"><li>Menyelenggarakan pembelajaran calistung yang menyenangkan sesuai perkembangan anak.</li><li>Membangun karakter positif melalui kegiatan bermain edukatif.</li><li>Menjalin komunikasi aktif antara guru dan orang tua melalui portal digital.</li></ul></div></div></div>
+  <div class="kelas-section" id="program-kami"><div class="section-header"><div class="section-title">🎓 Program Kami</div></div><div class="kelas-grid"><div class="kelas-card"><div class="kelas-header"><span class="kelas-emoji">🧸</span><div class="kelas-title">Kelas Bermain</div></div><div class="kelas-body"><div class="kelas-price">Rp125.000 <small>/bulan</small></div><button class="btn-daftar" onclick="openModal('modalRegister')">Daftar Sekarang →</button></div></div><div class="kelas-card"><div class="kelas-header"><span class="kelas-emoji">✏️</span><div class="kelas-title">Kelas Calistung</div></div><div class="kelas-body"><div class="kelas-price">Rp100.000 <small>/bulan</small></div><button class="btn-daftar" onclick="openModal('modalRegister')">Daftar Sekarang →</button></div></div><div class="kelas-card"><div class="kelas-header"><span class="kelas-emoji">📚</span><div class="kelas-title">Kelas Mata Pelajaran</div></div><div class="kelas-body"><div class="kelas-price">Rp100.000 <small>/bulan</small></div><button class="btn-daftar" onclick="openModal('modalRegister')">Daftar Sekarang →</button></div></div></div></div>
+  <div class="lokasi-section" id="kontak"><div class="section-header"><div class="section-title">📍 Lokasi & Kontak</div></div><div class="lokasi-grid"><div class="map-wrapper"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.0!2d107.0417!3d-6.1897!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMTEnMjIuOSJTIDEwN8KwMDInMzAuMSJF!5e0!3m2!1sid!2sid!4v1234567890!5m2!1sid!2sid" allowfullscreen="" loading="lazy" style="width:100%;height:100%;border:none;"></iframe></div><div class="kontak-card"><div class="kontak-title">📞 Hubungi Kami</div><div class="kontak-item"><div class="kontak-icon">📍</div><div><div class="kontak-info-val">Perumahan Hekayanya Residence, Jl. Rinjani Blok A8 No.3, Tambun Utara, Bekasi</div></div></div><div class="kontak-item"><div class="kontak-icon">📞</div><div><div class="kontak-info-val">0887-151-8778 (Amih Fatih)</div></div></div><a href="https://wa.me/6288715188778" target="_blank" class="btn-wa">💬 Chat WhatsApp Sekarang</a></div></div></div>
+  <footer><div class="footer-grid"><div class="footer-brand"><a class="logo" href="#"><div class="logo-icon">🌟</div>Al Fatih <span>Portal</span></a><p>Portal digital terpercaya untuk Guru, Orang Tua, dan Murid</p></div><div class="footer-col"><h4>Program</h4><ul><li><a href="#program-kami" onclick="showMain()">Kelas Bermain</a></li><li><a href="#program-kami" onclick="showMain()">Kelas Calistung</a></li></ul></div><div class="footer-col"><h4>Portal</h4><ul><li><a onclick="showPanel('panel-absensi')">Absensi</a></li><li><a onclick="showPanel('panel-nilai')">Nilai</a></li></ul></div></div><div class="footer-bottom"><span>© 2024 Rumah Bermain & Belajar Al Fatih</span></div></footer>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard-panel" id="dashboard-panel"><div class="dashboard-header"><div class="dash-avatar" id="dash-avatar-icon"></div><div class="dash-info"><h2 id="dash-welcome">Selamat Datang!</h2><p id="dash-sub">Pilih menu di bawah untuk memulai</p></div></div><div class="dash-menu" id="dash-menu-items"></div></div>
+
+<!-- PANEL DATA SISWA (CRUD LENGKAP) -->
+<div class="content-panel" id="panel-data-siswa">
+  <div class="panel-header">
+    <div class="panel-title">👥 Data Siswa</div>
+    <button class="btn-back" onclick="backToDash()">← Kembali</button>
+  </div>
+  <div class="guru-form">
+    <h3 id="form-title">➕ Tambah Data Siswa</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Nama Lengkap *</label><input type="text" id="siswa-nama" placeholder="Nama siswa"></div>
+      <div class="form-group"><label>Kelas *</label><select id="siswa-kelas"><option>Kelas Bermain</option><option>Kelas Calistung</option><option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Nama Orang Tua</label><input type="text" id="siswa-ortu" placeholder="Nama ayah/ibu"></div>
+      <div class="form-group"><label>No. HP</label><input type="text" id="siswa-hp" placeholder="08123456789"></div>
+    </div>
+    <div class="form-group"><label>Alamat</label><input type="text" id="siswa-alamat" placeholder="Alamat lengkap"></div>
+    <input type="hidden" id="edit-id">
+    <div>
+      <button class="btn-simpan" onclick="simpanSiswa()">💾 Simpan</button>
+      <button class="btn-excel btn-tambah" onclick="exportToExcel()">📎 Export Excel</button>
+      <button id="btn-batal" style="display:none; background:#aaa" class="btn-simpan" onclick="resetForm()">❌ Batal</button>
+    </div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>No</th><th>Nama Siswa</th><th>Kelas</th><th>Orang Tua</th><th>Kontak</th><th>Aksi</th></tr></thead>
+    <tbody id="tbody-siswa"></tbody>
+  </table>
+</div>
+
+<!-- PANEL LAINNYA (tetap sama seperti aslinya) -->
+<div class="content-panel" id="panel-absensi"><div class="panel-header"><div class="panel-title">📅 Absensi</div><button class="btn-back" onclick="backToDash()">← Kembali</button></div><div id="absensi-guru-form" style="display:none"><div class="guru-form"><h3>✏️ Input Absensi Harian</h3><div class="form-row"><div class="form-group"><label>Tanggal</label><input type="date" id="abs-tanggal" value="2025-05-28"></div><div class="form-group"><label>Kelas</label><select id="abs-kelas"><option>Kelas Bermain</option><option>Kelas Calistung</option><option>Kelas 1 SD</option><option>Kelas 2 SD</option><option>Kelas 3 SD</option></select></div></div></div></div><div class="info-cards"><div class="info-card"><div class="info-card-value">18</div><div class="info-card-label">Hadir Bulan Ini</div></div></div><table class="data-table"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Status</th></tr></thead><tbody><tr><td>28 Mei 2025</td><td>Kelas Calistung</td><td><span class="badge-hadir">Hadir</span></td></tr></tbody></table></div>
+<div class="content-panel" id="panel-nilai"><div class="panel-header"><div class="panel-title">📊 Nilai</div><button class="btn-back" onclick="backToDash()">← Kembali</button></div><div id="nilai-guru-form" style="display:none"><div class="guru-form"><h3>✏️ Input Nilai Siswa</h3><div class="form-row"><div class="form-group"><label>Nama Siswa</label><input type="text" placeholder="Cari nama siswa..."></div><div class="form-group"><label>Mata Pelajaran</label><select><option>Matematika</option></select></div></div><button class="btn-simpan" onclick="showToast('✅ Nilai berhasil disimpan!','success')">💾 Simpan Nilai</button></div></div><table class="data-table"><thead><tr><th>Mata Pelajaran</th><th>Nilai</th><th>Grade</th></tr></thead><tbody><tr><td>Matematika</td><td>88</td><td><span class="nilai-badge nilai-a">A</span></td></tr></tbody></table></div>
+<div class="content-panel" id="panel-raport"><div class="panel-header"><div class="panel-title">📋 Raport</div><button class="btn-back" onclick="backToDash()">← Kembali</button></div><div class="raport-box"><div class="raport-header"><div class="raport-school">Rumah Bermain & Belajar Al Fatih</div><div class="raport-title">LAPORAN HASIL BELAJAR</div></div><div class="raport-student"><div class="raport-field"><label>Nama Siswa</label><p id="raport-nama-siswa">—</p></div></div><button class="btn-simpan" onclick="showToast('🖨️ Raport siap diunduh','success')">🖨️ Cetak Raport</button></div></div>
+<div class="content-panel" id="panel-pengumuman"><div class="panel-header"><div class="panel-title">📢 Pengumuman</div><button class="btn-back" onclick="backToDash()">← Kembali</button></div><div class="pengumuman-list"><div class="pengumuman-card penting"><span class="pengumuman-badge badge-penting">Penting</span><div class="pengumuman-title">Pembayaran SPP Juni 2025</div><div class="pengumuman-body">Mohon melakukan pembayaran SPP paling lambat 5 Juni 2025.</div><div class="pengumuman-date">28 Mei 2025</div></div></div></div>
+<div class="content-panel" id="panel-elearning"><div class="panel-header"><div class="panel-title">💻 E-Learning</div><button class="btn-back" onclick="backToDash()">← Kembali</button></div><div class="elearn-grid"><div class="elearn-card"><div class="elearn-thumb">📐</div><div class="elearn-body"><div class="elearn-title">Penjumlahan 1-100</div><button class="btn-buka" onclick="showToast('Materi dibuka','success')">Buka</button></div></div></div></div>
+
+<script>
+// ==================== DATA SISWA (CRUD) ====================
+let daftarSiswa = [
+  { id: 1, nama: "Ahmad Fatih", kelas: "Kelas Calistung", orangTua: "Budi Santoso", kontak: "08123456789", alamat: "Perumahan Hekayanya" },
+  { id: 2, nama: "Siti Aisyah", kelas: "Kelas 1 SD", orangTua: "Siti Aminah", kontak: "08567891234", alamat: "Tambun Utara" },
+  { id: 3, nama: "Muhammad Rizki", kelas: "Kelas Bermain", orangTua: "Rizki Fadillah", kontak: "087812345678", alamat: "Srimahi" }
+];
+let nextId = 4;
+
+// ==================== AUTH ====================
+let currentUser = null;
+let loginRole = 'guru';
+let regRole = 'murid';
+const users = [
+  { email: 'guru@alfatih.id', pass: 'guru123', nama: 'Amih Fatih', role: 'guru', mapel: 'Semua' },
+  { email: 'ortu@alfatih.id', pass: 'ortu123', nama: 'Bapak Budi', role: 'ortu', anak: 'Ahmad Fatih' },
+  { email: 'murid@alfatih.id', pass: 'murid123', nama: 'Ahmad Fatih', role: 'murid', kelas: 'Kelas Calistung' }
+];
+
+function showToast(msg, type) { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:''); setTimeout(()=>t.className='toast',3000); }
+function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow=''; }
+function switchModal(from,to) { closeModal(from); setTimeout(()=>openModal(to),200); }
+function selectRole(ctx,role) { if(ctx==='login'){ loginRole=role; ['guru','ortu','murid'].forEach(r=>document.getElementById('login-tab-'+r).className='role-tab'+(r===role?' active-'+r:'')); } else { regRole=role; ['guru','ortu','murid'].forEach(r=>document.getElementById('reg-tab-'+r).className='role-tab'+(r===role?' active-'+r:'')); document.getElementById('reg-mapel-wrap').style.display=role==='guru'?'block':'none'; document.getElementById('reg-anak-wrap').style.display=role==='ortu'?'block':'none'; document.getElementById('reg-kelas-wrap').style.display=role==='murid'?'block':'none'; } }
+function doLogin() { const email=document.getElementById('login-email').value.trim(); const pass=document.getElementById('login-pass').value; const user=users.find(u=>(u.email===email||u.nama.toLowerCase()===email.toLowerCase())&&u.pass===pass&&u.role===loginRole); if(!user){document.getElementById('login-error').style.display='block'; return;} loginUser(user); closeModal('modalLogin'); }
+function doRegister() { const nama=document.getElementById('reg-nama').value; const email=document.getElementById('reg-email').value; const pass=document.getElementById('reg-pass').value; if(!nama||!email||pass.length<6){showToast('Data tidak lengkap','error');return;} const newUser={email,pass,nama,role:regRole}; if(regRole==='guru') newUser.mapel=document.getElementById('reg-mapel').value; if(regRole==='ortu') newUser.anak=document.getElementById('reg-anak').value; if(regRole==='murid') newUser.kelas=document.getElementById('reg-kelas').value; users.push(newUser); loginUser(newUser); closeModal('modalRegister'); showToast('Akun berhasil dibuat','success'); }
+function loginUser(user) { currentUser=user; document.getElementById('auth-buttons').style.display='none'; const badge=document.getElementById('user-badge'); badge.style.display='flex'; const av=document.getElementById('user-avatar-icon'); av.textContent=user.role==='guru'?'👨‍🏫':user.role==='ortu'?'👨‍👩‍👧':'👦'; av.className='user-avatar avatar-'+user.role; document.getElementById('user-name-display').textContent=user.nama; const rtag=document.getElementById('user-role-tag'); rtag.textContent=user.role==='guru'?'Guru':user.role==='ortu'?'Orang Tua':'Murid'; rtag.className='user-role-tag role-'+user.role; document.getElementById('nav-absensi').style.display=''; document.getElementById('nav-nilai').style.display=''; document.getElementById('nav-raport').style.display=''; showDashboard(); showToast('Halo '+user.nama+'!','success'); }
+function doLogout() { currentUser=null; document.getElementById('auth-buttons').style.display='flex'; document.getElementById('user-badge').style.display='none'; document.getElementById('nav-absensi').style.display='none'; document.getElementById('nav-nilai').style.display='none'; document.getElementById('nav-raport').style.display='none'; showMain(); showToast('Anda telah keluar',''); }
+function hideAll() { document.getElementById('main-site').style.display='none'; document.getElementById('dashboard-panel').classList.remove('active'); document.querySelectorAll('.content-panel').forEach(p=>p.classList.remove('active')); }
+function showMain() { hideAll(); document.getElementById('main-site').style.display='block'; window.scrollTo(0,0); }
+function showDashboard() { hideAll(); if(!currentUser){showMain();return;} document.getElementById('dashboard-panel').classList.add('active'); document.getElementById('dash-welcome').textContent='Halo, '+currentUser.nama+'! 👋'; document.getElementById('dash-sub').textContent=currentUser.role==='guru'?'Guru · '+currentUser.mapel:currentUser.role==='ortu'?'Orang Tua · Anak: '+currentUser.anak:'Murid · '+currentUser.kelas; const av=document.getElementById('dash-avatar-icon'); av.textContent=currentUser.role==='guru'?'👨‍🏫':currentUser.role==='ortu'?'👨‍👩‍👧':'👦'; av.style.background=currentUser.role==='guru'?'var(--blue)':currentUser.role==='ortu'?'var(--accent)':'var(--purple)'; const menus={guru:[{icon:'👥',label:'Data Siswa',desc:'Tambah/edit/hapus data',fn:"showPanel('panel-data-siswa')"},{icon:'📅',label:'Input Absensi',desc:'Catat kehadiran',fn:"showPanel('panel-absensi')"},{icon:'📊',label:'Input Nilai',desc:'Masukkan nilai',fn:"showPanel('panel-nilai')"},{icon:'📋',label:'Lihat Raport',desc:'Rekap hasil belajar',fn:"showPanel('panel-raport')"},{icon:'📢',label:'Pengumuman',desc:'Buat pengumuman',fn:"showPanel('panel-pengumuman')"},{icon:'💻',label:'E-Learning',desc:'Upload materi',fn:"showPanel('panel-elearning')"}],ortu:[{icon:'📅',label:'Absensi Anak',fn:"showPanel('panel-absensi')"},{icon:'📊',label:'Nilai Anak',fn:"showPanel('panel-nilai')"},{icon:'📋',label:'Raport',fn:"showPanel('panel-raport')"}],murid:[{icon:'📅',label:'Absensi Saya',fn:"showPanel('panel-absensi')"},{icon:'📊',label:'Nilai Saya',fn:"showPanel('panel-nilai')"}]}; const menuEl=document.getElementById('dash-menu-items'); menuEl.innerHTML=(menus[currentUser.role]||[]).map(m=>`<div class="dash-card" onclick="${m.fn}"><span class="dash-card-icon">${m.icon}</span><div class="dash-card-label">${m.label}</div><div class="dash-card-desc">${m.desc||''}</div></div>`).join(''); }
+function showPanel(id) { if(!currentUser && id!=='panel-pengumuman' && id!=='panel-elearning'){ openModal('modalLogin'); showToast('Silakan masuk dulu',''); return; } hideAll(); document.getElementById(id).classList.add('active'); if(id==='panel-data-siswa') renderTabelSiswa(); if(id==='panel-raport' && currentUser){ const n=currentUser.role==='murid'?currentUser.nama:currentUser.role==='ortu'?(currentUser.anak||'—'):'Ahmad Fatih'; document.getElementById('raport-nama-siswa').textContent=n; } const isGuru=currentUser && currentUser.role==='guru'; const guruForms={'panel-absensi':'absensi-guru-form','panel-nilai':'nilai-guru-form','panel-pengumuman':'pengumuman-guru-form','panel-elearning':'elearn-guru-form'}; if(guruForms[id]){const f=document.getElementById(guruForms[id]); if(f) f.style.display=isGuru?'block':'none';} window.scrollTo(0,0); }
+function backToDash() { if(currentUser) showDashboard(); else showMain(); }
+
+// ==================== CRUD SISWA ====================
+function renderTabelSiswa() {
+  const tbody = document.getElementById('tbody-siswa');
+  tbody.innerHTML = '';
+  daftarSiswa.forEach((s, i) => {
+    tbody.innerHTML += `<tr><td>${i+1}</td><td>${s.nama}</td><td>${s.kelas}</td><td>${s.orangTua || '-'}</td><td>${s.kontak || '-'}</td><td><button class="btn-icon btn-edit" onclick="editSiswa(${s.id})">✏️</button> <button class="btn-icon btn-delete" onclick="hapusSiswa(${s.id})">🗑️</button></td></tr>`;
+  });
+}
+
+function resetForm() {
+  document.getElementById('siswa-nama').value = '';
+  document.getElementById('siswa-kelas').value = 'Kelas Calistung';
+  document.getElementById('siswa-ortu').value = '';
+  document.getElementById('siswa-hp').value = '';
+  document.getElementById('siswa-alamat').value = '';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('form-title').innerHTML = '➕ Tambah Data Siswa';
+  document.getElementById('btn-batal').style.display = 'none';
+}
+
+function editSiswa(id) {
+  const s = daftarSiswa.find(s => s.id === id);
+  if(s) {
+    document.getElementById('siswa-nama').value = s.nama;
+    document.getElementById('siswa-kelas').value = s.kelas;
+    document.getElementById('siswa-ortu').value = s.orangTua || '';
+    document.getElementById('siswa-hp').value = s.kontak || '';
+    document.getElementById('siswa-alamat').value = s.alamat || '';
+    document.getElementById('edit-id').value = s.id;
+    document.getElementById('form-title').innerHTML = '✏️ Edit Data Siswa';
+    document.getElementById('btn-batal').style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function hapusSiswa(id) {
+  if(confirm('Yakin ingin menghapus data siswa ini?')) {
+    daftarSiswa = daftarSiswa.filter(s => s.id !== id);
+    renderTabelSiswa();
+    showToast('✅ Data siswa dihapus!', 'success');
+  }
+}
+
+function simpanSiswa() {
+  const nama = document.getElementById('siswa-nama').value.trim();
+  if(!nama) { showToast('Nama siswa wajib diisi', 'error'); return; }
+  const kelas = document.getElementById('siswa-kelas').value;
+  const orangTua = document.getElementById('siswa-ortu').value;
+  const kontak = document.getElementById('siswa-hp').value;
+  const alamat = document.getElementById('siswa-alamat').value;
+  const editId = document.getElementById('edit-id').value;
+  
+  if(editId) {
+    const idx = daftarSiswa.findIndex(s => s.id == editId);
+    if(idx !== -1) {
+      daftarSiswa[idx] = { ...daftarSiswa[idx], nama, kelas, orangTua, kontak, alamat };
+      showToast('✏️ Data siswa berhasil diperbarui!', 'success');
+    }
+  } else {
+    daftarSiswa.push({ id: nextId++, nama, kelas, orangTua, kontak, alamat });
+    showToast('➕ Siswa baru ditambahkan!', 'success');
+  }
+  renderTabelSiswa();
+  resetForm();
+}
+
+function exportToExcel() {
+  const data = daftarSiswa.map((s,i) => ({ No: i+1, Nama: s.nama, Kelas: s.kelas, 'Orang Tua': s.orangTua, Kontak: s.kontak, Alamat: s.alamat }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+  XLSX.writeFile(wb, `Data_Siswa_AlFatih.xlsx`);
+  showToast('📎 Export Excel berhasil!', 'success');
+}
+
+// ==================== SLIDER ====================
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const dots = document.querySelectorAll('.dot');
+function showSlide(n) { if(slides.length){ slides[currentSlide]?.classList.remove('active'); if(dots[currentSlide]) dots[currentSlide]?.classList.remove('active'); currentSlide = (n + slides.length) % slides.length; slides[currentSlide]?.classList.add('active'); if(dots[currentSlide]) dots[currentSlide]?.classList.add('active'); } }
+function changeSlide(dir) { showSlide(currentSlide + dir); }
+function goSlide(n) { showSlide(n); }
+setInterval(() => changeSlide(1), 5000);
+document.querySelectorAll('.modal-overlay').forEach(m => { m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); }); });
+
+selectRole('login','guru');
+selectRole('reg','murid');
+showMain();
+</script>
+</body>
+</html>
