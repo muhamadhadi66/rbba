@@ -296,26 +296,221 @@
   .section-title { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
   .section-title::before { content: ''; display: block; width: 6px; height: 28px; background: var(--primary); border-radius: 4px; }
 
-  .kelas-section { max-width: 1200px; margin: 48px auto; padding: 0 24px; }
-  .kelas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .kelas-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
-  .kelas-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); }
-  .kelas-header { background: linear-gradient(135deg, var(--primary), var(--orange)); padding: 28px 24px; color: white; text-align: center; }
-  .kelas-header-blue { background: linear-gradient(135deg, var(--blue), var(--purple)); }
-  .kelas-header-green { background: linear-gradient(135deg, var(--accent), var(--secondary)); }
-  .kelas-emoji { font-size: 48px; display: block; margin-bottom: 10px; }
-  .kelas-title { font-family: 'Fredoka One', cursive; font-size: 20px; }
-  .kelas-subtitle { font-size: 13px; opacity: 0.85; font-weight: 600; margin-top: 4px; }
-  .kelas-body { padding: 24px; }
-  .kelas-features { list-style: none; margin-bottom: 20px; }
-  .kelas-features li { padding: 6px 0; font-size: 13px; font-weight: 600; color: #555; display: flex; align-items: center; gap: 8px; }
-  .feat-icon { font-size: 14px; }
-  .kelas-price-wrap { background: var(--bg); border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; }
-  .kelas-price-label { font-size: 12px; font-weight: 800; color: #aaa; }
-  .kelas-price { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--primary); }
-  .kelas-price small { font-size: 13px; color: #aaa; font-family: 'Nunito', sans-serif; font-weight: 700; }
-  .btn-daftar { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 14px; font-family: 'Fredoka One', cursive; font-size: 16px; cursor: pointer; transition: all 0.2s; }
-  .btn-daftar:hover { background: #e05555; transform: scale(1.02); }
+/* ===== PROGRAM KAMI ===== */
+.kelas-section{
+  max-width:1200px;
+  margin:0 auto 48px;
+  padding:0 24px;
+}
+
+.kelas-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+
+.kelas-card{
+  background:#fff;
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
+  transition:.3s;
+  display:flex;
+  flex-direction:column;
+}
+
+.kelas-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 16px 45px rgba(0,0,0,.12);
+}
+
+.kelas-header{
+  position:relative;
+  overflow:hidden;
+  padding:38px 28px 30px;
+  color:#fff;
+}
+
+/* Lingkaran transparan */
+.kelas-header::after{
+  content:'';
+  position:absolute;
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  right:-70px;
+  bottom:-70px;
+}
+
+/* WARNA CARD */
+.kelas-card:nth-child(1) .kelas-header{
+  background:linear-gradient(135deg,#ff7465,#ff9654);
+}
+
+.kelas-card:nth-child(2) .kelas-header{
+  background:linear-gradient(135deg,#5f92f5,#b06ae9);
+}
+
+.kelas-card:nth-child(3) .kelas-header{
+  background:linear-gradient(135deg,#66c97d,#5f9df7);
+}
+
+.kelas-emoji{
+  font-size:42px;
+  display:block;
+  margin-bottom:16px;
+  position:relative;
+  z-index:1;
+}
+
+.kelas-title{
+  font-family:'Fredoka One',cursive;
+  font-size:30px;
+  line-height:1.2;
+  margin-bottom:8px;
+  position:relative;
+  z-index:1;
+}
+
+.kelas-subtitle{
+  font-size:15px;
+  font-weight:700;
+  opacity:.95;
+  position:relative;
+  z-index:1;
+}
+
+.kelas-body{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+
+.kelas-body p{
+  font-size:15px !important;
+  color:#777 !important;
+  line-height:1.8 !important;
+  margin-bottom:18px;
+}
+
+.kelas-features{
+  list-style:none;
+  padding:0;
+  margin:0 0 22px;
+}
+
+.kelas-features li{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:14px;
+  font-size:16px;
+  color:#555;
+  font-weight:700;
+}
+
+.feat-icon{
+  font-size:18px;
+  flex-shrink:0;
+}
+
+.kelas-price-wrap{
+  background:#f5efe6;
+  border-radius:18px;
+  padding:18px;
+  margin-top:auto;
+  margin-bottom:20px;
+}
+
+.kelas-price-label{
+  font-size:14px;
+  color:#999;
+  margin-bottom:6px;
+  font-weight:700;
+}
+
+.kelas-price{
+  font-family:'Fredoka One',cursive;
+  font-size:34px;
+}
+
+.kelas-card:nth-child(1) .kelas-price{
+  color:#ff6b63;
+}
+
+.kelas-card:nth-child(2) .kelas-price{
+  color:#4d89f7;
+}
+
+.kelas-card:nth-child(3) .kelas-price{
+  color:#58c26f;
+}
+
+.kelas-price small{
+  font-size:16px;
+  color:#aaa;
+  font-family:'Nunito',sans-serif;
+}
+
+.btn-daftar{
+  display:block;
+  text-align:center;
+  padding:18px;
+  border-radius:18px;
+  color:#fff;
+  font-family:'Fredoka One',cursive;
+  text-decoration:none;
+  font-size:18px;
+  transition:.3s;
+}
+
+.kelas-card:nth-child(1) .btn-daftar{
+  background:linear-gradient(135deg,#ff7465,#ff9654);
+}
+
+.kelas-card:nth-child(2) .btn-daftar{
+  background:linear-gradient(135deg,#5f92f5,#b06ae9);
+}
+
+.kelas-card:nth-child(3) .btn-daftar{
+  background:linear-gradient(135deg,#66c97d,#5f9df7);
+}
+
+.btn-daftar:hover{
+  transform:translateY(-2px);
+}
+
+@media (max-width:900px){
+  .kelas-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:600px){
+  .kelas-section{
+    padding:0 16px;
+  }
+
+  .kelas-grid{
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+
+  .kelas-title{
+    font-size:22px;
+  }
+
+  .kelas-price{
+    font-size:28px;
+  }
+
+  .btn-daftar{
+    font-size:16px;
+    padding:14px;
+  }
+}
 
   .reward-section { max-width: 1200px; margin: 0 auto 48px; padding: 0 24px; }
   .reward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
